@@ -75,10 +75,21 @@ INSERT INTO songs(song_id, title, artist_id, year, duration)
 VALUES (%s, %s, %s, %s, %s);
 """)
 
+
+# Artist data has duplicates (e.g. artist_id=ARNTLGG11E2835DDB9),
+# as a workaround to be able to continue with the exercise I'm adding an ON CONFLICT clause.
+# 'In real life' I'd analyze the duplicate rows to understand if the entire row
+# is a duplicate or only the artist_id. If the entire row is a duplicate and we assume
+# any future 'conflict' is a duplicate row as well, we could keep the ON CONFLICT clause.
+# If only the artist_id is a duplicate and the rest of the values are different,
+# we have a few different options: ON CONFLICT DO NOTHING, ON CONFLICT DO UPDATE,
+# re-structure the schema/tables, etc., but everything depends on the business need and available bandwidth.
 artist_table_insert = ("""
 INSERT INTO artists(artist_id, name, location, latitude, longitude)
-VALUES (%s, %s, %s, %s, %s);
+VALUES (%s, %s, %s, %s, %s)
+ON CONFLICT DO NOTHING;
 """)
+
 
 
 time_table_insert = ("""
