@@ -63,16 +63,29 @@ def process_log_file(cur, filepath):
     df = df.where(filterNextSong).dropna()
 
     # convert timestamp column to datetime
-    t = ""
+    # I looked up how to convert milliseconds to a timestamp (in the context of working with dfs):
+    # https://stackoverflow.com/a/61367745
+    t = pd.to_datetime(df.ts, unit='ms')
 
     # insert time data records
-    time_data = ""
-    column_labels = ""
-    time_df = ""
+    # Creating a dataframe with the timestamp series created above.
+    # Using that as base to extract values and add new columns.
+    time_df = pd.DataFrame({'startTime': t})
+    time_df['hour'] = time_df['startTime'].dt.hour
+    time_df['day'] = time_df['startTime'].dt.day
+    time_df['week'] = time_df['startTime'].dt.isocalendar().week
+    time_df['month'] = time_df['startTime'].dt.month
+    time_df['year'] = time_df['startTime'].dt.year
+    time_df['weekday'] = time_df['startTime'].dt.weekday
 
-    # for i, row in time_df.iterrows():
-    #     cur.execute(time_table_insert, list(row))
-    #
+    for i, row in time_df.iterrows():
+        cur.execute(time_table_insert, list(row))
+
+    for i, row in df.iterrows():
+        timestamp = row['ts']
+        print(timestamp)
+
+
     # # load user table
     # user_df = ""
     #

@@ -11,7 +11,7 @@ time_table_drop = "DROP TABLE IF EXISTS time;"
 songplay_table_create = ("""
 CREATE TABLE songplays (
    songplay_id SERIAL PRIMARY KEY,
-   start_time NUMERIC NOT NULL,
+   start_time TIMESTAMP NOT NULL,
    user_id INTEGER REFERENCES users(user_id),
    level VARCHAR(250) NOT NULL,
    song_id VARCHAR(250) REFERENCES songs(song_id),
@@ -52,7 +52,7 @@ CREATE TABLE artists (
 
 time_table_create = ("""
 CREATE TABLE time (
-   start_time NUMERIC PRIMARY KEY,
+   start_time TIMESTAMP PRIMARY KEY,
    hour VARCHAR (255) NOT NULL,
    day VARCHAR (255) NOT NULL,
    week NUMERIC (255) NOT NULL,
@@ -91,8 +91,10 @@ ON CONFLICT DO NOTHING;
 """)
 
 
-
 time_table_insert = ("""
+INSERT INTO time(start_time, hour, day, week, month, year, weekday)
+VALUES (%s, %s, %s, %s, %s, %s, %s)
+ON CONFLICT DO NOTHING;
 """)
 
 # FIND SONGS
