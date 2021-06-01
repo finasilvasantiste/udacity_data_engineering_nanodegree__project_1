@@ -9,16 +9,17 @@ import json
 #  https://stackoverflow.com/a/56766135
 import numpy as np
 from psycopg2.extensions import register_adapter, AsIs
+
 psycopg2.extensions.register_adapter(np.int64, psycopg2._psycopg.AsIs)
 
 
 def process_song_file(cur, filepath):
     # open song file
     with open(filepath, 'r') as f:
+        # String needs to be transformed first into a dictionary.
         data = json.load(f)
 
     df = pd.DataFrame(data, index=['song_id'])
-
 
     # insert artist record
     artist_id = df.iloc[0]['artist_id']
@@ -41,52 +42,67 @@ def process_song_file(cur, filepath):
 
 def process_log_file(cur, filepath):
     # open log file
-    df = ""
+
+    # The log files contain lines of json objects that are separated by tab and not comma.
+    # I looked up how to turn a file like that into a list with multiple dictionaries.
+    # https://stackoverflow.com/a/44450753
+    data = []
+    with open(filepath) as f:
+        for line in f:
+            data.append(json.loads(line))
+
+    print(len(data))
+
+    df = pd.DataFrame(data)
 
     # filter by NextSong action
-    df = ""
+    # Create a filter.
+    filterNextSong = df['page'] == 'NextSong'
+
+    # Apply the filter and remove rows that contain nulls.
+    df = df.where(filterNextSong).dropna()
 
     # convert timestamp column to datetime
     t = ""
-    
+
     # insert time data records
     time_data = ""
     column_labels = ""
     time_df = ""
 
-    for i, row in time_df.iterrows():
-        cur.execute(time_table_insert, list(row))
-
-    # load user table
-    user_df = ""
-
-    # insert user records
-    for i, row in user_df.iterrows():
-        cur.execute(user_table_insert, row)
-
-    # insert songplay records
-    for index, row in df.iterrows():
-        
-        # get songid and artistid from song and artist tables
-        cur.execute(song_select, (row.song, row.artist, row.length))
-        results = cur.fetchone()
-        
-        if results:
-            songid, artistid = results
-        else:
-            songid, artistid = None, None
-
-        # insert songplay record
-        songplay_data = ""
-        cur.execute(songplay_table_insert, songplay_data)
+    # for i, row in time_df.iterrows():
+    #     cur.execute(time_table_insert, list(row))
+    #
+    # # load user table
+    # user_df = ""
+    #
+    # # insert user records
+    # for i, row in user_df.iterrows():
+    #     cur.execute(user_table_insert, row)
+    #
+    # # insert songplay records
+    # for index, row in df.iterrows():
+    #
+    #     # get songid and artistid from song and artist tables
+    #     cur.execute(song_select, (row.song, row.artist, row.length))
+    #     results = cur.fetchone()
+    #
+    #     if results:
+    #         songid, artistid = results
+    #     else:
+    #         songid, artistid = None, None
+    #
+    #     # insert songplay record
+    #     songplay_data = ""
+    #     cur.execute(songplay_table_insert, songplay_data)
 
 
 def process_data(cur, conn, filepath, func):
     # get all files matching extension from directory
     all_files = []
     for root, dirs, files in os.walk(filepath):
-        files = glob.glob(os.path.join(root,'*.json'))
-        for f in files :
+        files = glob.glob(os.path.join(root, '*.json'))
+        for f in files:
             all_files.append(os.path.abspath(f))
 
     # get total number of files found
@@ -104,8 +120,8 @@ def main():
     conn = psycopg2.connect("host=127.0.0.1 dbname=sparkifydb user=student password=student")
     cur = conn.cursor()
 
-    process_data(cur=cur, conn=conn, filepath='data/song_data', func=process_song_file)
-    # process_data(cur, conn, filepath='data/log_data', func=process_log_file)
+    # process_data(cur=cur, conn=conn, filepath='data/song_data', func=process_song_file)
+    process_data(cur, conn, filepath='data/log_data', func=process_log_file)
 
     conn.close()
 
