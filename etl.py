@@ -51,8 +51,6 @@ def process_log_file(cur, filepath):
         for line in f:
             data.append(json.loads(line))
 
-    print(len(data))
-
     df = pd.DataFrame(data)
 
     # filter by NextSong action
@@ -79,19 +77,19 @@ def process_log_file(cur, filepath):
     time_df['year'] = time_df['startTime'].dt.year
     time_df['weekday'] = time_df['startTime'].dt.weekday
 
-    for i, row in time_df.iterrows():
-        cur.execute(time_table_insert, list(row))
+    # for i, row in time_df.iterrows():
+    #     cur.execute(time_table_insert, list(row))
 
-    for i, row in df.iterrows():
-        timestamp = row['ts']
-        print(timestamp)
+    # load user table
+    user_df = pd.DataFrame({'userId': df['userId'],
+                            'firstName': df['firstName'],
+                            'lastName': df['lastName'],
+                            'gender': df['gender'],
+                            'level': df['level']})
 
-    # # load user table
-    # user_df = ""
-    #
-    # # insert user records
-    # for i, row in user_df.iterrows():
-    #     cur.execute(user_table_insert, row)
+    # insert user records
+    for i, row in user_df.iterrows():
+        cur.execute(user_table_insert, row)
     #
     # # insert songplay records
     # for index, row in df.iterrows():

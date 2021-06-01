@@ -12,7 +12,7 @@ songplay_table_create = ("""
 CREATE TABLE songplays (
    songplay_id SERIAL PRIMARY KEY,
    start_time TIMESTAMP NOT NULL,
-   user_id INTEGER REFERENCES users(user_id),
+   user_id NUMERIC REFERENCES users(user_id),
    level VARCHAR(250) NOT NULL,
    song_id VARCHAR(250) REFERENCES songs(song_id),
    artist_id VARCHAR(250) REFERENCES artists(artist_id),
@@ -22,10 +22,10 @@ CREATE TABLE songplays (
 
 user_table_create = ("""
 CREATE TABLE users (
-   user_id SERIAL PRIMARY KEY,
+   user_id NUMERIC PRIMARY KEY,
    first_name VARCHAR (255) NOT NULL,
    last_name VARCHAR (255) NOT NULL,
-   gender VARCHAR (255) NOT NULL,
+   gender VARCHAR (1) NOT NULL,
    level VARCHAR (255) NOT NULL
 );
 """)
@@ -67,7 +67,11 @@ CREATE TABLE time (
 songplay_table_insert = ("""
 """)
 
+# I'm using ON CONFLICT DO NOTHING (TODO)
 user_table_insert = ("""
+INSERT INTO users(user_id, first_name, last_name, gender, level)
+VALUES (%s, %s, %s, %s, %s)
+ON CONFLICT DO NOTHING;
 """)
 
 song_table_insert = ("""
@@ -76,6 +80,7 @@ VALUES (%s, %s, %s, %s, %s);
 """)
 
 
+# TODO: revisit data to better understand if comment below is accurate.
 # Artist data has duplicates (e.g. artist_id=ARNTLGG11E2835DDB9),
 # as a workaround to be able to continue with the exercise I'm adding an ON CONFLICT clause.
 # 'In real life' I'd analyze the duplicate rows to understand if the entire row
