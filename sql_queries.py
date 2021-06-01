@@ -91,6 +91,9 @@ ON CONFLICT DO NOTHING;
 """)
 
 
+# Since we're using the time table as a kind of look-up dictionary
+# each row is unique. If we want to insert a row with a timestamp that already
+# exists in the table we can safely ignore it, that's why I'm using ON CONFLICT DO NOTHING.
 time_table_insert = ("""
 INSERT INTO time(start_time, hour, day, week, month, year, weekday)
 VALUES (%s, %s, %s, %s, %s, %s, %s)

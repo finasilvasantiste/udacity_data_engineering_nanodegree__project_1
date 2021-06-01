@@ -72,6 +72,7 @@ def process_log_file(cur, filepath):
     # Using that as base to extract values and add new columns.
     time_df = pd.DataFrame({'startTime': t})
     time_df['hour'] = time_df['startTime'].dt.hour
+    time_df['hour'] = time_df['startTime'].dt.hour
     time_df['day'] = time_df['startTime'].dt.day
     time_df['week'] = time_df['startTime'].dt.isocalendar().week
     time_df['month'] = time_df['startTime'].dt.month
@@ -84,7 +85,6 @@ def process_log_file(cur, filepath):
     for i, row in df.iterrows():
         timestamp = row['ts']
         print(timestamp)
-
 
     # # load user table
     # user_df = ""
