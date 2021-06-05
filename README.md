@@ -1,7 +1,7 @@
 # Project: Data Modeling with Postgres
 
 ## Set up
-- The db runs in a docker container, as described in this [knowledge article]('https://knowledge.udacity.com/questions/59537').
+- The db runs in a docker container, as described in this [knowledge article](https://knowledge.udacity.com/questions/59537).
 - Install the dependencies listed in `requirements.txt`
 - Make sure to use Python 3.
 
