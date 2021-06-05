@@ -1,5 +1,12 @@
 # Project: Data Modeling with Postgres
 
+## Summary
+- The imaginary startup called Sparkify wants to analyze the data they've been collecting on songs 
+  and user activity on their new music streaming app.
+- The data sources are log files and song metadata files, both types are in `.json`.
+- This ETL Pipeline makes that data available in an easy-to-consume/easy-to-analyze format while making sure
+a useful relationship between data points exists.  
+
 ## Set up
 - The db runs in a docker container, as described in this [knowledge article](https://knowledge.udacity.com/questions/59537).
 - Install the dependencies listed in `requirements.txt`
