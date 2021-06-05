@@ -11,7 +11,7 @@ time_table_drop = "DROP TABLE IF EXISTS time;"
 songplay_table_create = ("""
 CREATE TABLE songplays (
    songplay_id SERIAL PRIMARY KEY,
-   start_time TIMESTAMP NOT NULL,
+   start_time NUMERIC NOT NULL,
    user_id NUMERIC REFERENCES users(user_id),
    level VARCHAR(250) NOT NULL,
    song_id VARCHAR(250) REFERENCES songs(song_id),
@@ -52,7 +52,7 @@ CREATE TABLE artists (
 
 time_table_create = ("""
 CREATE TABLE time (
-   start_time TIMESTAMP PRIMARY KEY,
+   start_time NUMERIC PRIMARY KEY,
    hour VARCHAR (255) NOT NULL,
    day VARCHAR (255) NOT NULL,
    week NUMERIC (255) NOT NULL,
@@ -65,9 +65,12 @@ CREATE TABLE time (
 # INSERT RECORDS
 
 songplay_table_insert = ("""
+INSERT INTO songplays(start_time, user_id, level, song_id, artist_id, session_id)
+VALUES(%s, %s, %s, %s, %s, %s)
 """)
 
-# I'm using ON CONFLICT DO NOTHING (TODO)
+# I'm assuming a row with an user_id that already exists in the table
+# is a row with identical values, that's why I'm using ON CONFLICT DO NOTHING.
 user_table_insert = ("""
 INSERT INTO users(user_id, first_name, last_name, gender, level)
 VALUES (%s, %s, %s, %s, %s)
@@ -80,15 +83,8 @@ VALUES (%s, %s, %s, %s, %s);
 """)
 
 
-# TODO: revisit data to better understand if comment below is accurate.
-# Artist data has duplicates (e.g. artist_id=ARNTLGG11E2835DDB9),
-# as a workaround to be able to continue with the exercise I'm adding an ON CONFLICT clause.
-# 'In real life' I'd analyze the duplicate rows to understand if the entire row
-# is a duplicate or only the artist_id. If the entire row is a duplicate and we assume
-# any future 'conflict' is a duplicate row as well, we could keep the ON CONFLICT clause.
-# If only the artist_id is a duplicate and the rest of the values are different,
-# we have a few different options: ON CONFLICT DO NOTHING, ON CONFLICT DO UPDATE,
-# re-structure the schema/tables, etc., but everything depends on the business need and available bandwidth.
+# I'm assuming a row with an artist_id that already exists in the table
+# is a row with identical values, that's why I'm using ON CONFLICT DO NOTHING.
 artist_table_insert = ("""
 INSERT INTO artists(artist_id, name, location, latitude, longitude)
 VALUES (%s, %s, %s, %s, %s)
@@ -108,6 +104,12 @@ ON CONFLICT DO NOTHING;
 # FIND SONGS
 
 song_select = ("""
+SELECT DISTINCT s.song_id, s.artist_id
+FROM songs s JOIN artists a ON s.artist_id = a.artist_id
+WHERE s.title = %s
+AND a.name = %s
+AND s.duration = %s
+;
 """)
 
 # QUERY LISTS

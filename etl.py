@@ -23,7 +23,7 @@ def process_song_file(cur, filepath):
 
     # insert artist record
     artist_id = df.iloc[0]['artist_id']
-    name = df.iloc[0]['title']
+    name = df.iloc[0]['artist_name']
     location = df.iloc[0]['artist_location']
     latitude = df.iloc[0]['artist_latitude']
     longitude = df.iloc[0]['artist_longitude']
@@ -68,17 +68,21 @@ def process_log_file(cur, filepath):
     # insert time data records
     # Creating a dataframe with the timestamp series created above.
     # Using that as base to extract values and add new columns.
-    time_df = pd.DataFrame({'startTime': t})
-    time_df['hour'] = time_df['startTime'].dt.hour
-    time_df['hour'] = time_df['startTime'].dt.hour
-    time_df['day'] = time_df['startTime'].dt.day
-    time_df['week'] = time_df['startTime'].dt.isocalendar().week
-    time_df['month'] = time_df['startTime'].dt.month
-    time_df['year'] = time_df['startTime'].dt.year
-    time_df['weekday'] = time_df['startTime'].dt.weekday
+    time_df = pd.DataFrame({'startTime_timestamp': t})
+    time_df['startTime'] = df['ts']
+    time_df['hour'] = time_df['startTime_timestamp'].dt.hour
+    time_df['hour'] = time_df['startTime_timestamp'].dt.hour
+    time_df['day'] = time_df['startTime_timestamp'].dt.day
+    time_df['week'] = time_df['startTime_timestamp'].dt.isocalendar().week
+    time_df['month'] = time_df['startTime_timestamp'].dt.month
+    time_df['year'] = time_df['startTime_timestamp'].dt.year
+    time_df['weekday'] = time_df['startTime_timestamp'].dt.weekday
 
-    # for i, row in time_df.iterrows():
-    #     cur.execute(time_table_insert, list(row))
+    # Deleting the helper column.
+    del time_df['startTime_timestamp']
+
+    for i, row in time_df.iterrows():
+        cur.execute(time_table_insert, list(row))
 
     # load user table
     user_df = pd.DataFrame({'userId': df['userId'],
@@ -90,22 +94,23 @@ def process_log_file(cur, filepath):
     # insert user records
     for i, row in user_df.iterrows():
         cur.execute(user_table_insert, row)
-    #
-    # # insert songplay records
-    # for index, row in df.iterrows():
-    #
-    #     # get songid and artistid from song and artist tables
-    #     cur.execute(song_select, (row.song, row.artist, row.length))
-    #     results = cur.fetchone()
-    #
-    #     if results:
-    #         songid, artistid = results
-    #     else:
-    #         songid, artistid = None, None
-    #
-    #     # insert songplay record
-    #     songplay_data = ""
-    #     cur.execute(songplay_table_insert, songplay_data)
+
+    # insert songplay records
+    for index, row in df.iterrows():
+
+        # get songid and artistid from song and artist tables
+        cur.execute(song_select, (row.song, row.artist, row.length))
+        results = cur.fetchone()
+
+        if results:
+            songid, artistid = results
+            print(results)
+
+            # insert songplay record
+            songplay_data = [row['ts'], row['userId'], row['level'], songid, artistid, row['sessionId']]
+            cur.execute(songplay_table_insert, songplay_data)
+        else:
+            songid, artistid = None, None
 
 
 def process_data(cur, conn, filepath, func):
@@ -131,7 +136,7 @@ def main():
     conn = psycopg2.connect("host=127.0.0.1 dbname=sparkifydb user=student password=student")
     cur = conn.cursor()
 
-    # process_data(cur=cur, conn=conn, filepath='data/song_data', func=process_song_file)
+    process_data(cur=cur, conn=conn, filepath='data/song_data', func=process_song_file)
     process_data(cur, conn, filepath='data/log_data', func=process_log_file)
 
     conn.close()
