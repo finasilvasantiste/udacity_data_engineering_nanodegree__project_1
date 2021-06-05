@@ -14,6 +14,9 @@ psycopg2.extensions.register_adapter(np.int64, psycopg2._psycopg.AsIs)
 
 
 def process_song_file(cur, filepath):
+    """
+    Processes song data and loads it into song and artist tables accordingly.
+    """
     # open song file
     with open(filepath, 'r') as f:
         # String needs to be transformed first into a dictionary.
@@ -40,9 +43,11 @@ def process_song_file(cur, filepath):
     cur.execute(song_table_insert, song_data)
 
 
-def process_log_file(cur, filepath):
-    # open log file
-
+def get_log_data_as_df(filepath):
+    """
+    Returns log data as dataframe.
+    :return: log data as dataframe
+    """
     # The log files contain lines of json objects that are separated by tab and not comma.
     # I looked up how to turn a file like that into a list with multiple dictionaries.
     # https://stackoverflow.com/a/44450753
@@ -52,6 +57,27 @@ def process_log_file(cur, filepath):
             data.append(json.loads(line))
 
     df = pd.DataFrame(data)
+
+    return df
+
+
+def process_log_file(cur, filepath):
+    """
+    Processes log data and loads it into time, user and songplay tables accordingly.
+    """
+    # open log file
+
+    # # The log files contain lines of json objects that are separated by tab and not comma.
+    # # I looked up how to turn a file like that into a list with multiple dictionaries.
+    # # https://stackoverflow.com/a/44450753
+    # data = []
+    # with open(filepath) as f:
+    #     for line in f:
+    #         data.append(json.loads(line))
+    #
+    # df = pd.DataFrame(data)
+
+    df = get_log_data_as_df(filepath)
 
     # filter by NextSong action
     # Create a filter.
@@ -105,7 +131,8 @@ def process_log_file(cur, filepath):
         if results:
             songid, artistid = results
 
-            # FYI: there's only one match: ('SOZCTXZ12AB0182364', 'AR5KOSW1187FB35FF4')
+            # As mentioned in the project specs https://review.udacity.com/#!/rubrics/2500/view,
+            # there's only one match: ('SOZCTXZ12AB0182364', 'AR5KOSW1187FB35FF4')
             # print(results)
         else:
             songid, artistid = None, None
@@ -116,6 +143,9 @@ def process_log_file(cur, filepath):
 
 
 def process_data(cur, conn, filepath, func):
+    """
+    Processes given data using given function.
+    """
     # get all files matching extension from directory
     all_files = []
     for root, dirs, files in os.walk(filepath):
@@ -139,7 +169,7 @@ def main():
     cur = conn.cursor()
 
     process_data(cur=cur, conn=conn, filepath='data/song_data', func=process_song_file)
-    process_data(cur, conn, filepath='data/log_data', func=process_log_file)
+    process_data(cur=cur, conn=conn, filepath='data/log_data', func=process_log_file)
 
     conn.close()
 
