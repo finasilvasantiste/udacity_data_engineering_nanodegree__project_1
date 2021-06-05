@@ -5,7 +5,7 @@
   and user activity on their new music streaming app.
 - The data sources are log files and song metadata files, both types are in `.json`.
 - This ETL Pipeline makes that data available in an easy-to-consume/easy-to-analyze format while making sure
-a useful relationship between data points exists.  
+a useful relationship between data points exists, in other words, as tables in a relational db.  
 
 ## Set up
 - The db runs in a docker container, as described in this [knowledge article](https://knowledge.udacity.com/questions/59537).
