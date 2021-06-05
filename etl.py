@@ -67,7 +67,7 @@ def process_log_file(cur, filepath):
 
     # insert time data records
     # Creating a dataframe with the timestamp series created above.
-    # Using that as base to extract values and add new columns.
+    # Using that as base/helper column to extract values and add new columns.
     time_df = pd.DataFrame({'startTime_timestamp': t})
     time_df['startTime'] = df['ts']
     time_df['hour'] = time_df['startTime_timestamp'].dt.hour
@@ -104,13 +104,13 @@ def process_log_file(cur, filepath):
 
         if results:
             songid, artistid = results
-            print(results)
+
+            # FYI: there's only one match: ('SOZCTXZ12AB0182364', 'AR5KOSW1187FB35FF4')
+            # print(results)
 
             # insert songplay record
             songplay_data = [row['ts'], row['userId'], row['level'], songid, artistid, row['sessionId']]
             cur.execute(songplay_table_insert, songplay_data)
-        else:
-            songid, artistid = None, None
 
 
 def process_data(cur, conn, filepath, func):
