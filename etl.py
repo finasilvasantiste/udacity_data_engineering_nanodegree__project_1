@@ -13,6 +13,34 @@ from psycopg2.extensions import register_adapter, AsIs
 psycopg2.extensions.register_adapter(np.int64, psycopg2._psycopg.AsIs)
 
 
+def process_artist_data(df, cur):
+    """
+    Processes artist data and loads it into artist table.
+    """
+    # insert artist record
+    artist_id = df.iloc[0]['artist_id']
+    name = df.iloc[0]['artist_name']
+    location = df.iloc[0]['artist_location']
+    latitude = df.iloc[0]['artist_latitude']
+    longitude = df.iloc[0]['artist_longitude']
+    artist_data = [artist_id, name, location, latitude, longitude]
+    cur.execute(artist_table_insert, artist_data)
+
+
+def process_song_data(df, cur):
+    """
+    Processes song data and loads it into song table.
+    """
+    # insert song record
+    song_id = df.iloc[0]['song_id']
+    title = df.iloc[0]['title']
+    artist_id = df.iloc[0]['artist_id']
+    year = df.iloc[0]['year']
+    duration = df.iloc[0]['duration']
+    song_data = [song_id, title, artist_id, year, duration]
+    cur.execute(song_table_insert, song_data)
+
+
 def process_song_file(cur, filepath):
     """
     Processes song data and loads it into song and artist tables accordingly.
@@ -24,26 +52,12 @@ def process_song_file(cur, filepath):
 
     df = pd.DataFrame(data, index=['song_id'])
 
-    # insert artist record
-    artist_id = df.iloc[0]['artist_id']
-    name = df.iloc[0]['artist_name']
-    location = df.iloc[0]['artist_location']
-    latitude = df.iloc[0]['artist_latitude']
-    longitude = df.iloc[0]['artist_longitude']
-    artist_data = [artist_id, name, location, latitude, longitude]
-    cur.execute(artist_table_insert, artist_data)
-
-    # insert song record
-    song_id = df.iloc[0]['song_id']
-    title = df.iloc[0]['title']
-    artist_id = df.iloc[0]['artist_id']
-    year = df.iloc[0]['year']
-    duration = df.iloc[0]['duration']
-    song_data = [song_id, title, artist_id, year, duration]
-    cur.execute(song_table_insert, song_data)
+    # Process data for each table.
+    process_artist_data(df=df, cur=cur)
+    process_song_data(df=df, cur=cur)
 
 
-def get_log_data_as_df(filepath):
+def get_log_data_df(filepath):
     """
     Returns log data as dataframe.
     :return: log data as dataframe
@@ -61,31 +75,11 @@ def get_log_data_as_df(filepath):
     return df
 
 
-def process_log_file(cur, filepath):
+def get_time_data_df(df):
     """
-    Processes log data and loads it into time, user and songplay tables accordingly.
+    Returns timestamp details as dataframe.
+    :return: timestamp details as dataframe
     """
-    # open log file
-
-    # # The log files contain lines of json objects that are separated by tab and not comma.
-    # # I looked up how to turn a file like that into a list with multiple dictionaries.
-    # # https://stackoverflow.com/a/44450753
-    # data = []
-    # with open(filepath) as f:
-    #     for line in f:
-    #         data.append(json.loads(line))
-    #
-    # df = pd.DataFrame(data)
-
-    df = get_log_data_as_df(filepath)
-
-    # filter by NextSong action
-    # Create a filter.
-    filterNextSong = df['page'] == 'NextSong'
-
-    # Apply the filter and remove rows that contain nulls.
-    df = df.where(filterNextSong).dropna()
-
     # convert timestamp column to datetime
     # I looked up how to convert milliseconds to a timestamp (in the context of working with dfs):
     # https://stackoverflow.com/a/61367745
@@ -107,9 +101,23 @@ def process_log_file(cur, filepath):
     # Deleting the helper column.
     del time_df['startTime_timestamp']
 
+    return time_df
+
+
+def process_time_data(df, cur):
+    """
+    Processes time data and loads it into time table.
+    """
+    time_df = get_time_data_df(df)
+
     for i, row in time_df.iterrows():
         cur.execute(time_table_insert, list(row))
 
+
+def process_user_data(df, cur):
+    """
+    Processes user data and loads it into user table.
+    """
     # load user table
     user_df = pd.DataFrame({'userId': df['userId'],
                             'firstName': df['firstName'],
@@ -121,6 +129,11 @@ def process_log_file(cur, filepath):
     for i, row in user_df.iterrows():
         cur.execute(user_table_insert, row)
 
+
+def process_songplay_data(df, cur):
+    """
+    Processes songplay data and loads it into songplay table.
+    """
     # insert songplay records
     for index, row in df.iterrows():
 
@@ -140,6 +153,25 @@ def process_log_file(cur, filepath):
         # insert songplay record
         songplay_data = [row['ts'], row['userId'], row['level'], songid, artistid, row['sessionId']]
         cur.execute(songplay_table_insert, songplay_data)
+
+
+def process_log_file(cur, filepath):
+    """
+    Processes log data and loads it into time, user and songplay tables accordingly.
+    """
+    # open log file
+    df = get_log_data_df(filepath)
+
+    # filter by NextSong action
+    # Create a filter.
+    filterNextSong = df['page'] == 'NextSong'
+    # Apply the filter and remove rows that contain nulls.
+    df = df.where(filterNextSong).dropna()
+
+    # Process data for each table.
+    process_time_data(df=df, cur=cur)
+    process_user_data(df=df, cur=cur)
+    process_songplay_data(df=df, cur=cur)
 
 
 def process_data(cur, conn, filepath, func):
