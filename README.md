@@ -13,9 +13,12 @@ a useful relationship between data points exists.
 - Make sure to use Python 3.
 
 ## How to run
-- From the main project folder, run `python3 create_tables.py` to set up tables.
-- Then run `python3 etl.py` to run the etl process. (`etl_transform_and_load.py` contains methods used in `etl.py`.)
-- You can connect to the db directly by running `psql postgresql://student:student@localhost/sparkifydb`.
+- From the main project folder, run `python3 create_tables.py` in a terminal to set up tables. If tables already exist,
+  they will get deleted and recreated.
+- Then run `python3 etl.py` to run the etl process. (`etl_transform_and_load.py` contains methods used in `etl.py`, but `etl.py`
+  is the entry point.)
+- You can connect to the db directly by running `psql postgresql://student:student@localhost/sparkifydb`, and
+check the results by running sql statements inside the psql console.
 
 ### Note
 I've used the [project specs](https://review.udacity.com/#!/rubrics/2500/view) as guidance for completing the project.
