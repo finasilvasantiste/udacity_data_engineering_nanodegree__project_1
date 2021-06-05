@@ -7,7 +7,7 @@
 
 ## How to run
 - From the main project folder, run `python3 create_tables.py` to set up tables.
-- Then run `python3 etl.py` to run the etl process.
+- Then run `python3 etl.py` to run the etl process. (`etl_transform_and_load.py` contains methods used in `etl.py`.)
 - You can connect to the db directly by running `psql postgresql://student:student@localhost/sparkifydb`.
 
 ### Note
