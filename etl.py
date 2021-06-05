@@ -1,28 +1,10 @@
 from etl_transform_and_load import process_song_data, process_artist_data, process_user_data,\
-    process_songplay_data, process_time_data
+    process_songplay_data, process_time_data, get_log_data_df
 import os
 import glob
 import psycopg2
 import pandas as pd
 import json
-
-
-def get_log_data_df(filepath):
-    """
-    Returns log data as dataframe.
-    :return: log data as dataframe
-    """
-    # The log files contain lines of json objects that are separated by tab and not comma.
-    # I looked up how to turn a file like that into a list with multiple dictionaries.
-    # https://stackoverflow.com/a/44450753
-    data = []
-    with open(filepath) as f:
-        for line in f:
-            data.append(json.loads(line))
-
-    df = pd.DataFrame(data)
-
-    return df
 
 
 def process_song_file(cur, filepath):
