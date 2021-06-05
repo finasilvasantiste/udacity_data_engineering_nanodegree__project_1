@@ -41,22 +41,6 @@ def process_song_data(df, cur):
     cur.execute(song_table_insert, song_data)
 
 
-def process_song_file(cur, filepath):
-    """
-    Processes song data and loads it into song and artist tables accordingly.
-    """
-    # open song file
-    with open(filepath, 'r') as f:
-        # String needs to be transformed first into a dictionary.
-        data = json.load(f)
-
-    df = pd.DataFrame(data, index=['song_id'])
-
-    # Process data for each table.
-    process_artist_data(df=df, cur=cur)
-    process_song_data(df=df, cur=cur)
-
-
 def get_log_data_df(filepath):
     """
     Returns log data as dataframe.
@@ -153,6 +137,22 @@ def process_songplay_data(df, cur):
         # insert songplay record
         songplay_data = [row['ts'], row['userId'], row['level'], songid, artistid, row['sessionId']]
         cur.execute(songplay_table_insert, songplay_data)
+
+
+def process_song_file(cur, filepath):
+    """
+    Processes song data and loads it into song and artist tables accordingly.
+    """
+    # open song file
+    with open(filepath, 'r') as f:
+        # String needs to be transformed first into a dictionary.
+        data = json.load(f)
+
+    df = pd.DataFrame(data, index=['song_id'])
+
+    # Process data for each table.
+    process_artist_data(df=df, cur=cur)
+    process_song_data(df=df, cur=cur)
 
 
 def process_log_file(cur, filepath):
