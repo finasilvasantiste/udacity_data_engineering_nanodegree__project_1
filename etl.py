@@ -107,10 +107,12 @@ def process_log_file(cur, filepath):
 
             # FYI: there's only one match: ('SOZCTXZ12AB0182364', 'AR5KOSW1187FB35FF4')
             # print(results)
+        else:
+            songid, artistid = None, None
 
-            # insert songplay record
-            songplay_data = [row['ts'], row['userId'], row['level'], songid, artistid, row['sessionId']]
-            cur.execute(songplay_table_insert, songplay_data)
+        # insert songplay record
+        songplay_data = [row['ts'], row['userId'], row['level'], songid, artistid, row['sessionId']]
+        cur.execute(songplay_table_insert, songplay_data)
 
 
 def process_data(cur, conn, filepath, func):
