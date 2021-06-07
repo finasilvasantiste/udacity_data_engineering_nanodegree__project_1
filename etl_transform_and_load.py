@@ -101,12 +101,11 @@ def process_songplay_data(df, cur):
             # As mentioned in the project specs https://review.udacity.com/#!/rubrics/2500/view,
             # there's only one match: ('SOZCTXZ12AB0182364', 'AR5KOSW1187FB35FF4')
             # print(results)
-        else:
-            songid, artistid = None, None
 
-        # insert songplay record
-        songplay_data = [row['ts'], row['userId'], row['level'], songid, artistid, row['sessionId']]
-        cur.execute(songplay_table_insert, songplay_data)
+            # insert songplay record
+            songplay_data = [row['ts'], row['userId'], row['level'], songid, artistid, row['sessionId']]
+            cur.execute(songplay_table_insert, songplay_data)
+
 
 def process_artist_data(df, cur):
     """
